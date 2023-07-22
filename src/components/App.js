@@ -4,14 +4,17 @@ import Main from "./Main";
 import Loader from "./Loader";
 import Error from "./Error";
 import StartScreen from "./StartScreen";
+import Question from "./Question";
 export default function App() {
   const initialState = {
     questions: [],
     
     // error ,ready ,active ,finished
     status: "loading",
+    index:0,
+    answer:null,
   }
-  const [{questions,status}, dispatch] = useReducer(reducer, initialState);
+  const [{questions,status,index,answer}, dispatch] = useReducer(reducer, initialState);
   const numOfQuestions = questions.length
   useEffect(function () {
     fetch("http://localhost:9000/questions")
@@ -26,7 +29,11 @@ export default function App() {
       case "dataReceived":
         return { ...state, questions: action.payload, status: "ready" };
       case "dataFaild":
-        return {...state,status:"Error"}  
+        return {...state,status:"Error"}
+      case "start":
+        return {...state,status:"active"}
+      case "newAnswer":
+        return {...state,answer:action.payload}      
       default:
         throw new Error("Action unknown");
     }
@@ -38,7 +45,8 @@ export default function App() {
       <Main>
         {status==="loading"&&<Loader />}
         {status==="Error"&&<Error />}
-        {status==="ready"&&<StartScreen numOfQuestions = {numOfQuestions} />}
+        {status==="ready"&&<StartScreen dispatch={dispatch} numOfQuestions = {numOfQuestions} />}
+        {status==="active"&&<Question dispatch={dispatch} answer={answer} question = {questions[index]} />}
       </Main>
     </div>
   );
